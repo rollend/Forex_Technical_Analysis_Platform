@@ -26,8 +26,8 @@ def build_currency_dataframe(buy, sell):
             "CPI": buy + "_CPI",
             "GDP": buy + "_GDP",
             "Interest Rate": buy + " Interest Rate",
-            "PPI": buy + "_PPI",
-            "Unemployment Rate": buy + " Unemployment Rate",
+            #"PPI": buy + "_PPI",
+            #"Unemployment Rate": buy + " Unemployment Rate",
             "News Sentiment": buy + " News Sentiment",
             "Twitter Sentiment": buy + " Twitter Sentiment",
         }
@@ -40,8 +40,8 @@ def build_currency_dataframe(buy, sell):
             "CPI",
             "GDP",
             "Interest Rate",
-            "PPI",
-            "Unemployment Rate",
+            #"PPI",
+            #"Unemployment Rate",
             "News Sentiment",
             "Twitter Sentiment",
         }
@@ -52,8 +52,8 @@ def build_currency_dataframe(buy, sell):
             "CPI": sell + "_CPI",
             "GDP": sell + "_GDP",
             "Interest Rate": sell + " Interest Rate",
-            "PPI": sell + "_PPI",
-            "Unemployment Rate": sell + " Unemployment Rate",
+            #"PPI": sell + "_PPI",
+            #"Unemployment Rate": sell + " Unemployment Rate",
             "News Sentiment": sell + " News Sentiment",
             "Twitter Sentiment": sell + " Twitter Sentiment",
         }
@@ -78,13 +78,13 @@ def combine_indicators(currency, pair):
         "lstm_model/data/interim/interest_rate/{}_ir_processed.csv".format(
             currency)
     )
-    ppi = pd.read_csv(
-        "lstm_model/data/interim/ppi/{}_ppi_processed.csv".format(currency)
-    )
-    ue = pd.read_csv(
-        "lstm_model/data/interim/unemployment_rate/{}_ue_processed.csv".format(
-            currency)
-    )
+    # ppi = pd.read_csv(
+    #     "lstm_model/data/interim/ppi/{}_ppi_processed.csv".format(currency)
+    # )
+    # ue = pd.read_csv(
+    #     "lstm_model/data/interim/unemployment_rate/{}_ue_processed.csv".format(
+    #         currency)
+    # )
     news = pd.read_csv("lstm_model/data/interim/news/news_sentiment.csv")
     news = news[{"Time", currency.upper()}]
     news = news.rename(columns={currency.upper(): "News Sentiment"})
@@ -92,11 +92,11 @@ def combine_indicators(currency, pair):
     tweets = tweets[{"Time", currency.upper()}]
     tweets = tweets.rename(columns={currency.upper(): "Twitter Sentiment"})
 
-    combined_df = merge_dataframe([cpi, gdp, ir, ppi, ue, news, tweets])
+    combined_df = merge_dataframe([cpi, gdp, ir, news, tweets])
 
     if currency.upper() in pair:
         exchange_rate = pd.read_csv(
-            "lstm_model/data/interim/exchange_rate/{}_exchange.csv".format(
+            "lstm_model/data/interim/exchange_rates/{}_exchange.csv".format(
                 pair)
         )
         combined_df = merge_dataframe([combined_df, exchange_rate])
@@ -136,7 +136,7 @@ def convert_date(exchange):
 
 
 if __name__ == "__main__":
-    currency_pair = "EURUSD"
+    currency_pair = "GBPUSD"
     sentiment_keyword = {
         "usd": {
             "positive": [

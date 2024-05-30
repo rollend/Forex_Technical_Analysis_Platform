@@ -4,26 +4,26 @@ import boto3
 from decimal import Decimal
 
 DB_ANALYSIS_COLUMNS = [
-    "EURUSD",
+    #"EURUSD",
     "GBPUSD",
-    "USDJPY",
-    "AUDCAD",
-    "EURUSDEma10",
-    "EURUSDEma50",
+    #"USDJPY",
+    #"AUDCAD",
+   # "EURUSDEma10",
+    #"EURUSDEma50",
     "GBPUSDEma10",
     "GBPUSDEma50",
-    "USDJPYEma10",
-    "USDJPYEma50",
-    "AUDCADEma10",
-    "AUDCADEma50",
-    "EURUSDAccumulationDistribution",
-    "GBPUSDAccumulationDistribution",
-    "USDJPYAccumulationDistribution",
-    "AUDCADAccumulationDistribution"
+   # "USDJPYEma10",
+    #"USDJPYEma50",
+   # "AUDCADEma10",
+    #"AUDCADEma50"
+    # "EURUSDAccumulationDistribution",
+    # "GBPUSDAccumulationDistribution",
+    # "USDJPYAccumulationDistribution",
+    # "AUDCADAccumulationDistribution"
 ]
 
 
-def store_indicator_data(date, timestamp, analysis, sentiment):
+def store_indicator_data(date, timestamp, analysis):
     """
     Stores new indicator data for each currency pair in DynamoDB
 
@@ -44,7 +44,7 @@ def store_indicator_data(date, timestamp, analysis, sentiment):
     for name in DB_ANALYSIS_COLUMNS:
         item[name] = Decimal(str(analysis[name]))
     
-    for currency in sentiment:
-        item[currency] = Decimal(str(sentiment[currency]))
+    # for currency in sentiment:
+    #     item[currency] = Decimal(str(sentiment[currency]))
 
     table.put_item(Item=item)

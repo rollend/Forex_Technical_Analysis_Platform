@@ -33,15 +33,15 @@ def generate_prediction(symbol, processed_df, window_size, time_steps, prev_clos
     ema10_col = symbol + "Ema10"
     ema50_col = symbol + "Ema50"
     rsi_col = symbol + "Rsi"
-    ad_col = symbol + "AccumulationDistribution"
+    #ad_col = symbol + "AccumulationDistribution"
     predicted_df = processed_df[[
         symbol,
         ema10_col,
         ema50_col,
         rsi_col,
-        ad_col,
-        buy,
-        sell
+        #ad_col,
+        #buy,
+        #sell
     ]]
     predicted_df = predicted_df.copy()
     predicted_df.loc[:, [symbol]] = scaler.transform(predicted_df[[symbol]])

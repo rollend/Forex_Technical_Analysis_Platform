@@ -58,12 +58,13 @@ def test_model(pair, window_size, batch_size, time_steps):
 
     series = pd.read_csv(
         "lstm_model/data/processed/{}_processed.csv".format(pair))
+    series.fillna(0, inplace=True)
     series = series[series.shape[0] % batch_size:]
     close = series[['Time', 'Real Close', 'Close']]
     close = close.copy()
 
     series = series.drop(['Time', 'Real Close'], axis=1)
-    series = series[['Close', 'EMA_10', 'EMA_50', 'RSI', 'A/D Index',
+    series = series[['Close', 'EMA_10', 'EMA_50', 'RSI', #'A/D Index',
                      #'{} Interest Rate'.format(buy), '{} Interest Rate'.format(
                      #    sell), '{}_CPI'.format(buy), '{}_CPI'.format(sell),
                      '{} Twitter Sentiment'.format(
@@ -120,4 +121,4 @@ def test_model(pair, window_size, batch_size, time_steps):
 
 
 if __name__ == "__main__":
-    test_model("AUDCAD", 96, 64, 4)
+    test_model("GBPUSD", 96, 64, 4)

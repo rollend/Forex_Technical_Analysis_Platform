@@ -22,7 +22,11 @@ func handler(request events.CloudWatchEvent) (events.CloudWatchEvent, error) {
 	}
 	// Gets latest exchange rates for each symbol and market news
 	finnhubClient := exchangerate.NewForexApi()
-	newRate, newNews, err := exchangerate.CreateNewSymbolRate(finnhubClient, &currencyPairs, 120, 0, "1", prevHeadline)
+	// newRate, newNews, err := exchangerate.CreateNewSymbolRate(finnhubClient, &currencyPairs, 120, 0, "1", prevHeadline)
+
+	oandaClient := exchangerate.NewOandaForexApi()
+	newRate, newNews, err := exchangerate.CreateNewSymbolRate_Oanda(finnhubClient, oandaClient, &currencyPairs, 200000, 0, "1", prevHeadline)
+
 	if err != nil {
 		log.Println(err)
 		return events.CloudWatchEvent{}, err
@@ -30,7 +34,7 @@ func handler(request events.CloudWatchEvent) (events.CloudWatchEvent, error) {
 	if newRate == nil {
 		return events.CloudWatchEvent{}, nil
 	}
-	// Sends market news and exchange rates to DynamoDB
+	//Sends market news and exchange rates to DynamoDB
 	finance.SendRateToDB(newRate, newNews)
 
 	for i := 0; i < len(currencyPairs); i++ {

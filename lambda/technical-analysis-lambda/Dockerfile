@@ -1,4 +1,4 @@
-FROM golang:1.16 as build-image
+FROM golang:1.21.0-bullseye as build-image
 
 WORKDIR /go/src
 COPY go.mod main.go ./

@@ -8,7 +8,7 @@ from boto3.dynamodb.conditions import Key
 import datetime
 
 # LSTM models only supported for these currency pairs for now
-SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "AUDCAD"]
+SYMBOLS = ["GBPUSD"]
 
 
 def generate_technical_indicators(new_ohlc_data):
@@ -32,14 +32,14 @@ def generate_technical_indicators(new_ohlc_data):
         high_price = float(symbolData['M']['High']['N'])
         low_price = float(symbolData['M']['Low']['N'])
         close_price = float(symbolData['M']['Close']['N'])
-        trade_volume = float(symbolData['M']['Volume']['N'])
-        indicator_data[symbol + 'AccumulationDistribution'] = calculate_accumulation_distribution(
-            open_price,
-            high_price,
-            low_price,
-            close_price,
-            trade_volume
-        )
+        #trade_volume = float(symbolData['M']['Volume']['N'])
+        # indicator_data[symbol + 'AccumulationDistribution'] = calculate_accumulation_distribution(
+        #     open_price,
+        #     high_price,
+        #     low_price,
+        #     close_price,
+        #     trade_volume
+        # )
         previous_ema_10 = get_previous_ema(close_price, symbol, 10)
         previous_ema_50 = get_previous_ema(close_price, symbol, 50)
         indicator_data[symbol + 'Ema10'] = calculate_ema(close_price, 10, previous_ema_10)

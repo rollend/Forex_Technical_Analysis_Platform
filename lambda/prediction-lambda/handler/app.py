@@ -10,7 +10,7 @@ from connections import scan_connections, broadcast_inference, store_inference
 
 WINDOW_SIZE = 96
 PREDICTION_TIME_STEPS = 4
-SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "AUDCAD"]
+SYMBOLS = ["GBPUSD"]
 
 
 def handler(event, context):
@@ -19,8 +19,8 @@ def handler(event, context):
         timestamp = event['Records'][0]['dynamodb']['Keys']['Timestamp']['S']
 
         analysis = generate_technical_indicators(event['Records'][0]['dynamodb']['NewImage'])
-        sentiment = generate_twitter_sentiment(event['Records'][0]['dynamodb']['Keys'])
-        store_indicator_data(date, timestamp, analysis, sentiment)
+        #sentiment = generate_twitter_sentiment(event['Records'][0]['dynamodb']['Keys'])
+        store_indicator_data(date, timestamp, analysis)
         indicator_df = get_technical_analysis_data(date, timestamp)
         processed_df = preprocess(indicator_df)
         for currency in SYMBOLS:
@@ -30,3 +30,10 @@ def handler(event, context):
             store_inference(currency, predictions, timestamp)
     except Exception as e:
         print("Exception:", e)
+
+
+# if __name__ == "__main__":
+#     handler({'Records':{0:{'dynamodb':{'Keys':{'Date':{'S':'test'},'Timestamp':{'S':'test2'}},'NewImage':{
+#         'GBPUSD':{'M':{'Open':{'N':'1'},'High':{'N':'1'},'Low':{'N':'1'},'Close':{'N':'1'},'Volume':{'N':'1'}}},
+#         'Date':{'S':{}}, 'Timestamp':{'S':{}}}}}}}, {})
+    

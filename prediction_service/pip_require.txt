@@ -1,0 +1,4 @@
+frb==1.1.4
+twitterapi==2.6.10
+sklearn==0.0
+tensorflow-docs

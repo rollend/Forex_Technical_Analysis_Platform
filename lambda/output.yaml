@@ -1,0 +1,378 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Forex Analytics Platform Template
+Globals:
+  Function:
+    Timeout: 300
+Parameters:
+  ProjectApiKey:
+    Type: String
+    Description: Finnhub API Key
+  TwitterConsumerKey:
+    Type: String
+  TwitterConsumerSecret:
+    Type: String
+  TwitterAccessTokenKey:
+    Type: String
+  TwitterAccessTokenSecret:
+    Type: String
+  OANDAAccountID:
+    Type: String
+  OANDAApiKey:
+    Type: String
+Resources:
+  ForexDataWebsocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: ForexDataWebsocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.message
+    Metadata:
+      SamResourceId: ForexDataWebsocket
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: ConnectIntegration
+    Metadata:
+      SamResourceId: ConnectRoute
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketMessageFunction.Arn}/invocations
+    Metadata:
+      SamResourceId: ConnectIntegration
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: DisconnectIntegration
+    Metadata:
+      SamResourceId: DisconnectRoute
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketMessageFunction.Arn}/invocations
+    Metadata:
+      SamResourceId: DisconnectIntegration
+  SubscribeRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      RouteKey: subscribe
+      AuthorizationType: NONE
+      OperationName: SubscribeRoute
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: SubscribeIntegration
+    Metadata:
+      SamResourceId: SubscribeRoute
+  SubscribeIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketMessageFunction.Arn}/invocations
+    Metadata:
+      SamResourceId: SubscribeIntegration
+  UnsubscribeRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      RouteKey: unsubscribe
+      AuthorizationType: NONE
+      OperationName: UnsubscribeRoute
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: UnsubscribeIntegration
+    Metadata:
+      SamResourceId: UnsubscribeRoute
+  UnsubscribeIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketMessageFunction.Arn}/invocations
+    Metadata:
+      SamResourceId: UnsubscribeIntegration
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      RouteKey: $default
+      AuthorizationType: NONE
+      OperationName: DefaultRoute
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: DefaultIntegration
+    Metadata:
+      SamResourceId: DefaultRoute
+  DefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebsocketMessageFunction.Arn}/invocations
+    Metadata:
+      SamResourceId: DefaultIntegration
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+    - ConnectRoute
+    - SubscribeRoute
+    - UnsubscribeRoute
+    - DisconnectRoute
+    - DefaultRoute
+    Properties:
+      ApiId:
+        Ref: ForexDataWebsocket
+    Metadata:
+      SamResourceId: Deployment
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      DeploymentId:
+        Ref: Deployment
+      ApiId:
+        Ref: ForexDataWebsocket
+    Metadata:
+      SamResourceId: Stage
+  SymbolDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 256
+      PackageType: Image
+      FunctionName: SymbolDataFunction
+      Environment:
+        Variables:
+          PROJECT_API_KEY:
+            Ref: ProjectApiKey
+          OANDA_API_KEY:
+            Ref: OANDAApiKey
+          OANDA_ACCOUNT_ID:
+            Ref: OANDAAccountID
+          API_GATEWAY_URI:
+            Fn::Sub: https://${ForexDataWebsocket}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+      Events:
+        ScheduledFinnhubCall1:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/2 22-23 ? * SUN *)
+        ScheduledFinnhubCall2:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/2 * ? * MON-THU *)
+        ScheduledFinnhubCall3:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0/2 0-22 ? * FRI *)
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SymbolRateTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: WebsocketConnectionsTable
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ForexDataWebsocket}/*
+      ImageUri: 109587176248.dkr.ecr.eu-west-2.amazonaws.com/ftaplatform:symboldatafunction-f392cf2b6726-go1.x-v1
+    Metadata:
+      DockerContext: E:\Github\Forex_Technical_Analysis_Platform\lambda\technical-analysis-lambda
+      DockerTag: go1.x-v1
+      Dockerfile: Dockerfile
+      SamResourceId: SymbolDataFunction
+  WebsocketMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      FunctionName: WebsocketMessageFunction
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: SymbolRateTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: WebsocketConnectionsTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TechnicalAnalysisTable
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ForexDataWebsocket}/*
+      ImageUri: 109587176248.dkr.ecr.eu-west-2.amazonaws.com/ftaplatform:websocketmessagefunction-01d1da9ad967-go1.x-v1
+    Metadata:
+      DockerContext: E:\Github\Forex_Technical_Analysis_Platform\lambda\websocket-server-lambda
+      DockerTag: go1.x-v1
+      Dockerfile: Dockerfile
+      SamResourceId: WebsocketMessageFunction
+  WebsocketMessageFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+    - ForexDataWebsocket
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: WebsocketMessageFunction
+      Principal: apigateway.amazonaws.com
+    Metadata:
+      SamResourceId: WebsocketMessageFunctionPermission
+  PredictionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      MemorySize: 2048
+      PackageType: Image
+      FunctionName: PredictionFunction
+      Environment:
+        Variables:
+          API_GATEWAY_URI:
+            Fn::Sub: https://${ForexDataWebsocket}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+          TWITTER_CONSUMER_KEY:
+            Ref: TwitterConsumerKey
+          TWITTER_CONSUMER_SECRET:
+            Ref: TwitterConsumerSecret
+          TWITTER_ACCESS_TOKEN_KEY:
+            Ref: TwitterAccessTokenKey
+          TWITTER_ACCESS_TOKEN_SECRET:
+            Ref: TwitterAccessTokenSecret
+      Policies:
+      - AWSLambdaDynamoDBExecutionRole
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TechnicalAnalysisTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: WebsocketConnectionsTable
+      - Statement:
+        - Effect: Allow
+          Action:
+          - execute-api:ManageConnections
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ForexDataWebsocket}/*
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              Fn::GetAtt:
+              - SymbolRateTable
+              - StreamArn
+            StartingPosition: LATEST
+      ImageUri: 109587176248.dkr.ecr.eu-west-2.amazonaws.com/ftaplatform:predictionfunction-a2982831409a-python3.8
+    Metadata:
+      DockerContext: E:\Github\Forex_Technical_Analysis_Platform\lambda\prediction-lambda\handler
+      DockerTag: python3.8
+      Dockerfile: Dockerfile
+      SamResourceId: PredictionFunction
+  SymbolRateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: SymbolRateTable
+      AttributeDefinitions:
+      - AttributeName: Date
+        AttributeType: S
+      - AttributeName: Timestamp
+        AttributeType: S
+      KeySchema:
+      - AttributeName: Date
+        KeyType: HASH
+      - AttributeName: Timestamp
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+    Metadata:
+      SamResourceId: SymbolRateTable
+  WebsocketConnectionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: WebsocketConnectionsTable
+      AttributeDefinitions:
+      - AttributeName: ConnectionId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: ConnectionId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+    Metadata:
+      SamResourceId: WebsocketConnectionsTable
+  TechnicalAnalysisTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: TechnicalAnalysisTable
+      AttributeDefinitions:
+      - AttributeName: Date
+        AttributeType: S
+      - AttributeName: Timestamp
+        AttributeType: S
+      KeySchema:
+      - AttributeName: Date
+        KeyType: HASH
+      - AttributeName: Timestamp
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+    Metadata:
+      SamResourceId: TechnicalAnalysisTable
+Outputs:
+  WebSocketURI:
+    Value:
+      Fn::Join:
+      - ''
+      - - wss://
+        - Ref: ForexDataWebsocket
+        - .execute-api.
+        - Ref: AWS::Region
+        - .amazonaws.com/
+        - Ref: Stage

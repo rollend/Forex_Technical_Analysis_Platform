@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 CURRENCIES = ["USD", "EUR", "CAD", "NZD", "CHF", "AUD", "JPY", "GBP"]
-SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "AUDCAD"]
+SYMBOLS = ["GBPUSD"]
 
 
 def preprocess(analysis_df):
@@ -21,7 +21,7 @@ def preprocess(analysis_df):
     # Combines Date and Timestamp columns
     processed_df = combine_date_timestamp(analysis_df)
     # Converts empty data to nan to avoid issues when calculating mean
-    analysis_df = convert_to_nan(analysis_df, CURRENCIES, -100)
+    #analysis_df = convert_to_nan(analysis_df, CURRENCIES, -100)
     analysis_df = convert_to_nan(analysis_df, SYMBOLS, 0)
 
     for symbol in SYMBOLS:
@@ -33,15 +33,15 @@ def preprocess(analysis_df):
         ema50_col = symbol + "Ema50"
         processed_df[ema10_col] = stationary_log_returns(analysis_df, ema10_col)
         processed_df[ema50_col] = stationary_log_returns(analysis_df, ema50_col)
-        ad_col = symbol + "AccumulationDistribution"
-        processed_df[ad_col] = analysis_df[ad_col]
+        #ad_col = symbol + "AccumulationDistribution"
+        #processed_df[ad_col] = analysis_df[ad_col]
         rsi_col = symbol + "Rsi"
         # Calculates 14 period RSI
         processed_df[rsi_col] = calculate_rsi(analysis_df, symbol, 14)
 
-    for currency in CURRENCIES:
-        # Gets average tweet sentiment using past hour of scores
-        processed_df[currency] = average_tweet_sentiment(analysis_df, currency, 60)
+    # for currency in CURRENCIES:
+    #     # Gets average tweet sentiment using past hour of scores
+    #     processed_df[currency] = average_tweet_sentiment(analysis_df, currency, 60)
 
     # Compresses all data from 1 minute intervals to 15 minute intervals
     processed_df = compress_dataframe_time_interval(processed_df, 15)

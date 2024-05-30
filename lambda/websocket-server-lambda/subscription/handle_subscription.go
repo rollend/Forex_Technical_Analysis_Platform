@@ -26,6 +26,17 @@ func HandleSubscription(connectionId string, event events.APIGatewayWebsocketPro
 		SharedConfigState: session.SharedConfigEnable,
 	}))
 
+	// currentDay := int(time.Now().Weekday())
+	// currentHour := time.Now().Hour()
+	// keyCondList := keyConditionDayData(currentDay, currentHour)
+	// for _, condition := range *keyCondList {
+	// 	newDataQuery, err := broadcast.InitialOhlcData("GBPUSD", condition)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	_ = newDataQuery
+	// }
+
 	msg := SubscriptionMessage{}
 	// Decodes json message so that data can be parsed
 	err := json.Unmarshal([]byte(event.Body), &msg)
@@ -65,6 +76,7 @@ func HandleSubscription(connectionId string, event events.APIGatewayWebsocketPro
 		keyCondList := keyConditionDayData(currentDay, currentHour)
 		for _, condition := range *keyCondList {
 			newDataQuery, err := broadcast.InitialOhlcData(msg.Data, condition)
+			log.Printf("Query: %v", newDataQuery)
 			if err != nil {
 				return err
 			}
@@ -74,7 +86,7 @@ func HandleSubscription(connectionId string, event events.APIGatewayWebsocketPro
 				log.Printf("dynamodb querying error: %s", err)
 				return err
 			}
-
+			//log.Printf("Data: %v", subscriptionData)
 			exchangeRateMessage := broadcast.CreateExchangeRate()
 			if err = exchangeRateMessage.Broadcast(event, sess, subscriptionData, connectionId, &msg.Data); err != nil {
 				return err

@@ -16,9 +16,26 @@ def indicators_preprocess(pair):
     Args:
         pair: String representing the currency pair symbol(e.g EURUSD)
     """
-    currency = pd.read_csv(
-        "lstm_model/data/external/exchange_rates/{}_M1.csv".format(pair)
-    )
+    try:
+        currency = pd.read_csv(
+            "lstm_model/data/external/exchange_rates/{}_M1.csv".format(pair)
+        )
+    except FileNotFoundError:
+        print("File not found")
+        csv_files = [
+            "lstm_model/data/external/exchange_rates/DAT_XLSX_{}_M1_2018.csv".format(pair),
+            "lstm_model/data/external/exchange_rates/DAT_XLSX_{}_M1_2019.csv".format(pair),
+            "lstm_model/data/external/exchange_rates/DAT_XLSX_{}_M1_2020.csv".format(pair)
+        ]
+        # df_append = pd.DataFrame()
+        # for file in csv_files:
+        #     df_temp = pd.read_csv(file)
+        #     df_append = df_append.append(df_temp, ignore_index=True)
+        df_concat = pd.concat([pd.read_csv(f, header=None) for f in csv_files], ignore_index=True, axis=0)
+        currency = df_concat.iloc[:,:-1]       
+        currency.columns=['Time','Open','High','Low','Close']
+        
+        
     currency = convert_date(currency)
 
     currency = configure_time(15, currency)
@@ -27,18 +44,18 @@ def indicators_preprocess(pair):
     currency["EMA_10"] = pd.DataFrame(abstract.EMA(currency["Close"], timeperiod=960))
     currency["EMA_50"] = pd.DataFrame(abstract.EMA(currency["Close"], timeperiod=4800))
     currency["RSI"] = pd.DataFrame(abstract.RSI(currency["Close"], timeperiod=14))
-    currency["A/D Index"] = pd.DataFrame(
-        abstract.AD(
-            currency["High"], currency["Low"], currency["Close"], currency["Volume"]
-        )
-    )
-    currency["A/D Index"] = currency["A/D Index"] - currency["A/D Index"].shift(1)
+    # currency["A/D Index"] = pd.DataFrame(
+    #     abstract.AD(
+    #         currency["High"], currency["Low"], currency["Close"], currency["Volume"]
+    #     )
+    # )
+    # currency["A/D Index"] = currency["A/D Index"] - currency["A/D Index"].shift(1)
     currency = stationary_log_returns(currency)
 
     currency["Time"] = currency["Time"].dt.strftime("%Y-%m-%d %H:%M:%S")
 
     currency.to_csv(
-        "lstm_model/data/interim/exchange_rate/{}_exchange.csv".format(pair),
+        "lstm_model/data/interim/exchange_rates/{}_exchange.csv".format(pair),
         index=False,
     )
 

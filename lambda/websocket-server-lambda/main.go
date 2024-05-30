@@ -13,7 +13,8 @@ import (
 
 func handler(ctx context.Context, event events.APIGatewayWebsocketProxyRequest) (events.APIGatewayProxyResponse, error) {
 	rc := event.RequestContext
-
+	//err := subscription.HandleSubscription("123", event, true)
+	//_ = err
 	switch rk := rc.RouteKey; rk {
 	case "$connect":
 		log.Println("Connecting...")

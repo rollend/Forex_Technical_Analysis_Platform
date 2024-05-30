@@ -54,13 +54,13 @@ def train_model(pair, batch_size, window_size, nodes_arr, optimizer, dropout, ep
     sell = pair[3:]
 
     series = series[series.shape[0] % batch_size:]
-
+    series.fillna(0, inplace=True)
     series = series.drop(['Time', 'Real Close'], axis=1)
-    series = series[['Close', 'EMA_10', 'EMA_50', 'RSI', 'A/D Index',
+    series = series[['Close', 'EMA_10', 'EMA_50', 'RSI', #'A/D Index',
                      #'{} Interest Rate'.format(buy), '{} Interest Rate'.format(
                      #    sell), '{}_CPI'.format(buy), '{}_CPI'.format(sell),
-                     '{} Twitter Sentiment'.format(
-                         buy), '{} Twitter Sentiment'.format(sell),
+                     #'{} Twitter Sentiment'.format(
+                      #   buy), '{} Twitter Sentiment'.format(sell),
                      #'{} News Sentiment'.format(
                      #    buy), '{} News Sentiment'.format(sell),
                      #'EUR_GDP', 'USD_GDP', 'EUR_PPI', 'USD_PPI', 'USD Unemployment Rate', 'EUR Unemployment Rate'
@@ -116,5 +116,5 @@ if __name__ == "__main__":
     optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)
     dropout = 0.2
     epochs = 15
-    train_model("AUDCAD", batch_size, window_size,
+    train_model("GBPUSD", batch_size, window_size,
                 nodes, optimizer, dropout, epochs)

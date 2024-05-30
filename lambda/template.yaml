@@ -18,6 +18,11 @@ Parameters:
     Type: String
   TwitterAccessTokenSecret:
     Type: String
+  OANDAAccountID:
+    Type: String
+  OANDAApiKey:
+    Type: String 
+
 
 Resources:
     ForexDataWebsocket:
@@ -147,6 +152,8 @@ Resources:
         Environment:
             Variables:
               PROJECT_API_KEY: !Ref ProjectApiKey
+              OANDA_API_KEY: !Ref OANDAApiKey
+              OANDA_ACCOUNT_ID: !Ref OANDAAccountID
               API_GATEWAY_URI: !Sub 'https://${ForexDataWebsocket}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/'
         Events:
           ScheduledFinnhubCall1:

@@ -147,7 +147,7 @@ pytest=6.2.2=py38haa95532_2
 pytest-runner=5.3.0=pyhd3eb1b0_0
 python=3.8.8=hdbf39b2_4
 python-dateutil=2.8.1=pyhd3eb1b0_0
-python-dotenv=0.15.0=pypi_0
+python-dotenv=0.15.0 
 pytz=2021.1=pyhd3eb1b0_0
 pywin32=227=py38he774522_1
 pywinpty=0.5.7=py38_0
@@ -168,9 +168,9 @@ service_identity=18.1.0=py_0
 setuptools=52.0.0=py38haa95532_0
 sip=4.19.13=py38ha925a31_0
 six=1.15.0=py38haa95532_0
-sklearn=0.0=pypi_0
+sklearn=0.0 
 sqlite=3.33.0=h2a8f88b_0
-ta-lib=0.4.19=pypi_0
+ta-lib=0.4.19 
 tensorboard=2.4.0=pyhc547734_0
 tensorboard-plugin-wit=1.6.0=py_0
 tensorflow=2.3.0=mkl_py38h8c0d9a2_0
@@ -190,7 +190,7 @@ typed-ast=1.4.2=py38h2bbff1b_1
 typing-extensions=3.7.4.3=hd3eb1b0_0
 typing_extensions=3.7.4.3=pyh06a4308_0
 urllib3=1.26.3=pyhd3eb1b0_0
-vadersentiment=3.3.2=pypi_0
+vadersentiment=3.3.2 
 vc=14.2=h21ff451_1
 vs2015_runtime=14.27.29016=h5e58377_2
 w3lib=1.21.0=py_0
